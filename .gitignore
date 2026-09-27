@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+data/raw/
+data/interim/
+data/processed/
+manifests/pdb_v1/
+reports/pdb_v1/
+runs/
+release/

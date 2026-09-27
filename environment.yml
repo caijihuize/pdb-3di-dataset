@@ -1,0 +1,12 @@
+name: pdb-3di-dataset
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - biopython
+  - pyarrow
+  - requests
+  - pyyaml
+  - foldseek
+  - mmseqs2

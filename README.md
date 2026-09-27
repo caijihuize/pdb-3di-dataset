@@ -76,6 +76,9 @@ evaluation mmCIFs, provenance, reports and SHA-256 checksums. It does not includ
 the downloaded source archive or intermediate databases. Publish the staged
 folder with `hf upload caijihuize/pdb-3di-dataset release/pdb_v1 . --repo-type dataset`
 after checking its contents and target repository settings.
+For this build, `scripts/submit_publish_hf.sh` can run after the finalization
+job succeeds. It verifies every staged file against `checksums/SHA256SUMS`,
+then creates the public dataset repository if needed and uploads the release.
 
 MMseqs2 clustering uses 30% identity and 80% bidirectional coverage. PDB-entry
 members and exact AA duplicates are kept in the same group. Each evaluation

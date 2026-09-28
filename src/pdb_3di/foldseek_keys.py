@@ -12,14 +12,17 @@ def main():
     p.add_argument("--ids", required=True)
     p.add_argument("--output", required=True)
     a = p.parse_args()
-    wanted = {line.strip().upper() for line in open(a.ids) if line.strip()}
+    wanted = {line.strip() for line in open(a.ids) if line.strip()}
     found = {}
     with open(a.lookup) as h:
         for line in h:
             parts = line.rstrip("\n").split("\t")
             if len(parts) < 2:
                 continue
-            ident = parts[1].upper()
+            pdb_id, separator, chain = parts[1].partition("_")
+            if not separator:
+                continue
+            ident = f"{pdb_id.upper()}_{chain}"
             if ident in wanted:
                 found[ident] = parts[0]
     missing = sorted(wanted - found.keys())

@@ -65,7 +65,7 @@ def metadata(path: Path) -> dict:
                                          data.get("_atom_site.label_atom_id", []),
                                          data.get("_atom_site.group_PDB", [])):
         if atom == "CA" and group == "ATOM" and entity in entity_length:
-            auth_entity[auth.upper()] = entity
+            auth_entity[auth] = entity
     return {"pdb_id": path.name[:4].upper(), "method": method, "category": category,
             "resolution": resolution, "entity_lengths": entity_length,
             "auth_entity": auth_entity}
@@ -89,7 +89,11 @@ def fasta(path: Path) -> dict[str, str]:
                     if key in out:
                         raise ValueError(f"Duplicate Foldseek ID: {key}")
                     out[key] = "".join(chunks)
-                key = line[1:].split()[0].upper()
+                raw_key = line[1:].split()[0]
+                pdb_id, separator, chain = raw_key.partition("_")
+                if not separator or len(pdb_id) != 4 or not chain:
+                    raise ValueError(f"Invalid Foldseek ID: {raw_key}")
+                key = f"{pdb_id.upper()}_{chain}"
                 chunks = []
             elif line:
                 chunks.append(line)

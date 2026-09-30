@@ -9,6 +9,8 @@ import shutil
 from collections import defaultdict
 from pathlib import Path
 
+from pdb_3di.foldseek_keys import normalize_id
+
 
 class UnionFind:
     def __init__(self, items):
@@ -47,7 +49,14 @@ def unions_from_tsv(uf: UnionFind, path: Path, key_map: dict[str, str] | None = 
                 continue
             left, right = columns[:2]
             if key_map is not None:
-                left, right = key_map.get(left, left), key_map.get(right, right)
+                def stable(value: str) -> str:
+                    if value in key_map:
+                        return key_map[value]
+                    try:
+                        return normalize_id(value)
+                    except ValueError:
+                        return value
+                left, right = stable(left), stable(right)
             if left in uf.parent and right in uf.parent:
                 uf.union(left, right)
 

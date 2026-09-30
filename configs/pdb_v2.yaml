@@ -1,0 +1,38 @@
+annotation_version: pdb_v1.1
+source_version: pdb_v1
+annotations:
+  - deposition_and_release_dates
+  - r_work_and_r_free
+  - backbone_completeness_and_coordinate_gaps
+  - occupancy_altloc_and_b_factor
+  - 3di_entropy_and_low_complexity
+  - native_and_sifts_uniprot
+  - sifts_pfam_and_cath
+filters:
+  max_3di_token_fraction: 0.95
+  min_backbone_complete_fraction: 0.90
+  max_internal_missing_residues: max(10, floor(observed_length / 10))
+split_common:
+  sequence_identity: 0.30
+  bidirectional_coverage: 0.80
+  keep_same_pdb_together: true
+  keep_exact_aa_together: true
+  keep_same_uniprot_together: true
+  seed: 42
+  validation_groups: 1000
+  test_groups: 1000
+  cluster_sampling_weight: inverse_group_size
+pdb_v2_sequence:
+  group_edges: [mmseqs_sequence, same_pdb, exact_aa, same_uniprot]
+pdb_v2_structure:
+  group_edges: [mmseqs_sequence, same_pdb, exact_aa, same_uniprot, foldseek_structure]
+  foldseek:
+    evalue: 1.0e-3
+    coverage: 0.80
+    coverage_mode: 0
+    alignment_type: 2
+pdb_v2_time:
+  train_release_through: 2024-12-31
+  validation_release_range: [2025-01-01, 2025-12-31]
+  test_release_range: [2026-01-01, 2026-09-30]
+  novelty_labels: [sequence_novel, structure_novel]

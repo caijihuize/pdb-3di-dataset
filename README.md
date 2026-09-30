@@ -97,6 +97,24 @@ versions, parameters and final split IDs. A live archive inventory is not a
 permanent historical snapshot. Historical wwPDB snapshots are an alternative
 when exact coordinate version pinning is required before download.
 
+## Enhanced versions
+
+The published `pdb_v1` files remain immutable. The enhancement pipeline adds:
+
+- `pdb_v1.1`: identical rows and split IDs, plus dates, crystallographic R
+  values, coordinate completeness, gaps, occupancy, alternate locations,
+  B factors, 3Di complexity, and native/SIFTS UniProt, Pfam and CATH IDs.
+- `pdb_v2_sequence`: MMseqs, exact sequence, PDB entry and UniProt connected
+  components, with inverse cluster size sampling weights.
+- `pdb_v2_structure`: the sequence grouping plus Foldseek structural cluster
+  edges for structure isolated evaluation.
+- `pdb_v2_time`: chronological splits through the 2026-09-30 source freeze,
+  with separate sequence novelty and structure novelty labels.
+
+The detailed frozen parameters are in `configs/pdb_v2.yaml`. After downloading
+the current SIFTS CSV mappings into `data/raw/mappings/`, submit the complete
+annotation and clustering workflow with `bash scripts/submit_v2_pipeline.sh`.
+
 ## Source and reuse
 
 PDB Core Archive: <https://www.wwpdb.org/>. Search and file APIs:

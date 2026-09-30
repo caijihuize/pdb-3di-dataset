@@ -135,29 +135,31 @@ def split_groups(name: str, uf: UnionFind, records: dict, annotations: dict, out
 
 
 def chronological(records: dict, annotations: dict, sequence_uf: UnionFind,
-                  structure_uf: UnionFind, output: Path) -> None:
-    canonical = {}
+                  foldseek_uf: UnionFind, output: Path) -> None:
+    period_candidates = {"train": {}, "valid": {}, "test": {}}
     for record_id, record in records.items():
         annotation = annotations[record_id]
         if not usable(record, annotation) or not annotation.get("release_date"):
             continue
-        old = canonical.get(record["aa"])
-        if old is None or rank(record, annotation) < rank(records[old], annotations[old]):
-            canonical[record["aa"]] = record_id
-    periods = {"train": [], "valid": [], "test": []}
-    for record_id in canonical.values():
-        date = annotations[record_id]["release_date"]
+        date = annotation["release_date"]
         if date <= "2024-12-31":
-            periods["train"].append(record_id)
+            period = "train"
         elif date <= "2025-12-31":
-            periods["valid"].append(record_id)
+            period = "valid"
         elif date <= "2026-09-30":
-            periods["test"].append(record_id)
+            period = "test"
+        else:
+            continue
+        old = period_candidates[period].get(record["aa"])
+        if old is None or rank(record, annotation) < rank(records[old], annotations[old]):
+            period_candidates[period][record["aa"]] = record_id
+    periods = {period: sorted(by_sequence.values())
+               for period, by_sequence in period_candidates.items()}
     for ids in periods.values():
         ids.sort()
     write_ids(output, periods)
     train_sequence = {sequence_uf.find(x) for x in periods["train"]}
-    train_structure = {structure_uf.find(x) for x in periods["train"]}
+    train_structure = {foldseek_uf.find(x) for x in periods["train"]}
     with (output / "novelty.tsv").open("w", newline="") as handle:
         writer = csv.writer(handle, delimiter="\t", lineterminator="\n")
         writer.writerow(["id", "split", "release_date", "sequence_novel", "structure_novel"])
@@ -165,7 +167,7 @@ def chronological(records: dict, annotations: dict, sequence_uf: UnionFind,
             for record_id in periods[split]:
                 writer.writerow([record_id, split, annotations[record_id]["release_date"],
                                  int(sequence_uf.find(record_id) not in train_sequence),
-                                 int(structure_uf.find(record_id) not in train_structure)])
+                                 int(foldseek_uf.find(record_id) not in train_structure)])
     with (output / "split_counts.tsv").open("w") as handle:
         for split, ids in periods.items():
             handle.write(f"{split}\t{len(ids)}\n")
@@ -227,18 +229,21 @@ def main() -> None:
     union_buckets(sequence_uf, by_pdb.values())
     union_buckets(sequence_uf, by_sequence.values())
     union_buckets(sequence_uf, by_uniprot.values())
-    structure_uf = sequence_uf.copy()
+    foldseek_uf = UnionFind(records)
     key_map = {}
     with args.structure_key_map.open(newline="") as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
             key_map[row["foldseek_db_key"]] = row["id"]
-    unions_from_tsv(structure_uf, args.structure_clusters, key_map)
+    unions_from_tsv(foldseek_uf, args.structure_clusters, key_map)
+    structure_uf = sequence_uf.copy()
+    for record_id in records:
+        structure_uf.union(record_id, foldseek_uf.find(record_id))
     v11(args.v1_manifests, args.annotations, args.output_root / "pdb_v1_1")
     split_groups("sequence", sequence_uf, records, annotations,
                  args.output_root / "pdb_v2_sequence", args.seed, args.valid_groups, args.test_groups)
     split_groups("structure", structure_uf, records, annotations,
                  args.output_root / "pdb_v2_structure", args.seed, args.valid_groups, args.test_groups)
-    chronological(records, annotations, sequence_uf, structure_uf,
+    chronological(records, annotations, sequence_uf, foldseek_uf,
                   args.output_root / "pdb_v2_time")
 
 

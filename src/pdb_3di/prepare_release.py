@@ -65,11 +65,14 @@ inventory*, before method, quality and chain filtering.
 | Validation | {counts['valid']:,} | {counts['valid']:,} |
 | Test | {counts['test']:,} | {counts['test']:,} |
 
-Each Parquet row contains `id`, `sequence_3di`, and `sequence_aa`. The record ID
-has the form `<PDB_ID>_<Foldseek chain ID>`. ID lists in `ids/` follow Parquet
-row order. The full deposited mmCIF entries for validation and test are in
-`structures/`; the target chain for a record is identified by its ID and the
-metadata in `provenance/records.tsv`. Other chains may be present in the file.
+Each Parquet row contains `id`, `sequence_3di`, and `sequence_aa`. Ordinary
+record IDs have the form `<PDB_ID>_<chain ID>`; multi-model entries use
+`<PDB_ID>_MODEL_<model number>_<chain ID>`. ID lists in `ids/` follow Parquet
+row order. The corresponding `*_structure_ids.tsv` files give the row index,
+split, stable ID, PDB ID, model number, author chain ID and internal Foldseek
+database key. The Foldseek key is build-specific; use the stable ID externally.
+The full deposited mmCIF entries for validation and test are in `structures/`.
+Other chains may be present in each coordinate file.
 
 ```python
 from datasets import load_dataset
@@ -152,9 +155,12 @@ def main() -> None:
         copy(processed / f"{split}.parquet",
              stage / "data" / f"{split}-00000-of-00001.parquet")
     for split in ("train", "valid", "test"):
-        copy(manifests / f"{split}_ids.txt", stage / "ids" / f"{split}_ids.txt")
+        release_split = "validation" if split == "valid" else split
+        copy(manifests / f"{split}_ids.txt", stage / "ids" / f"{release_split}_ids.txt")
+        copy(manifests / f"{split}_structure_ids.tsv",
+             stage / "ids" / f"{release_split}_structure_ids.tsv")
         copy(manifests / f"{split}_row_index.tsv",
-             stage / "provenance" / f"{split}_row_index.tsv")
+             stage / "provenance" / f"{release_split}_row_index.tsv")
     for split in ("validation", "test"):
         ids = (manifests / f"{'valid' if split == 'validation' else split}_ids.txt").read_text().splitlines()
         directory = processed / "structures" / split

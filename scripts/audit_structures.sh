@@ -6,11 +6,14 @@ PYTHON="${PDB3DI_PYTHON:-python}"
 THREADS="${SLURM_CPUS_PER_TASK:-${THREADS:-16}}"
 FSDB="${ROOT}/data/interim/foldseek/experimental"
 OUT="${STRUCT_AUDIT_DIR:-${ROOT}/data/interim/structure}"
+MANIFEST="${ROOT}/manifests/pdb_v1"
 mkdir -p "${OUT}"
+find "${OUT}" -mindepth 1 -depth -delete
 for SPLIT in train valid test; do
   "${PYTHON}" "${ROOT}/src/pdb_3di/foldseek_keys.py" \
-    --lookup "${FSDB}.lookup" --ids "${ROOT}/manifests/pdb_v1/${SPLIT}_ids.txt" \
-    --output "${OUT}/${SPLIT}.keys"
+    --header-db "${FSDB}_h" --header-index "${FSDB}_h.index" \
+    --ids "${MANIFEST}/${SPLIT}_ids.txt" --output "${OUT}/${SPLIT}.keys" \
+    --mapping "${MANIFEST}/${SPLIT}_structure_ids.tsv" --split "${SPLIT}"
   "${FOLDSEEK}" createsubdb "${OUT}/${SPLIT}.keys" "${FSDB}" "${OUT}/${SPLIT}"
 done
 for QUERY in valid test; do

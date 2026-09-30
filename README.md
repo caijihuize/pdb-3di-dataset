@@ -15,7 +15,8 @@ Coordinates are downloaded as PDBx/mmCIF.gz.
 - Protein chains with at least 30 Foldseek-observed residues, at most 20% unknown
   amino acids, equal AA/3Di lengths, and valid 3Di symbols.
 - NMR and integrative/hybrid models are not in the primary version 1 dataset.
-- One record is one Foldseek chain, identified as `<PDB_ID>_<chain>`.
+- One record is one Foldseek chain, identified as `<PDB_ID>_<chain>`. Entries
+  with multiple coordinate models use `<PDB_ID>_MODEL_<model>_<chain>`.
   `records.tsv` retains the PDB entry, author chain ID, mapped polymer entity,
   method, resolution, sequence coverage and both sequences.
 - The evaluation mmCIF is the full deposited entry. Its target chain is specified
@@ -70,6 +71,10 @@ settings.
 FASTA files and validation/test mmCIF structures. `manifests/pdb_v1/` contains
 source IDs, checksums, split IDs, group membership and exclusion reasons.
 `reports/pdb_v1/` contains validation and audit summaries.
+The published `ids/` directory contains one stable ID per Parquet row plus
+`*_structure_ids.tsv` mappings with the PDB entry, model, author chain and
+build-specific Foldseek database key. Stable IDs should be used to reference
+records; the numeric Foldseek keys are included for exact build provenance.
 After all checks pass, `scripts/finalize.sh` also stages a Hugging Face dataset
 repository in `release/pdb_v1/`, including a dataset card, three Parquet splits,
 evaluation mmCIFs, provenance, reports and SHA-256 checksums. It does not include

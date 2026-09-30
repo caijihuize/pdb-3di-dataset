@@ -23,6 +23,13 @@ def main() -> None:
     checks = {"split_counts": {}, "status": "passed"}
     for split in ("train", "valid", "test"):
         ids = (manifest / f"{split}_ids.txt").read_text().splitlines()
+        with (manifest / f"{split}_structure_ids.tsv").open(newline="") as handle:
+            mapping = list(csv.DictReader(handle, delimiter="\t"))
+        assert [row["id"] for row in mapping] == ids, f"{split} structure ID mapping mismatch"
+        assert [int(row["row_index"]) for row in mapping] == list(range(len(ids))), \
+            f"{split} structure ID mapping row order mismatch"
+        assert len({row["foldseek_db_key"] for row in mapping}) == len(ids), \
+            f"{split} duplicate Foldseek DB keys"
         name = "validation" if split == "valid" else split
         table = pq.read_table(processed / f"{name}.parquet").to_pydict()
         assert table["id"] == ids, f"{split} row order mismatch"

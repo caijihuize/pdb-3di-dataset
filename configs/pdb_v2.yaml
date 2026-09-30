@@ -26,6 +26,8 @@ pdb_v2_sequence:
   group_edges: [mmseqs_sequence, same_pdb, exact_aa, same_uniprot]
 pdb_v2_structure:
   group_edges: [mmseqs_sequence, same_pdb, exact_aa, same_uniprot, foldseek_structure, cath_topology]
+  validation_groups: 500
+  test_groups: 500
   foldseek:
     evalue: 1.0e-3
     coverage: 0.50

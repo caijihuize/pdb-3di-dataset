@@ -233,6 +233,8 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--valid-groups", type=int, default=1000)
     parser.add_argument("--test-groups", type=int, default=1000)
+    parser.add_argument("--structure-valid-groups", type=int, default=500)
+    parser.add_argument("--structure-test-groups", type=int, default=500)
     args = parser.parse_args()
     records = {row["id"]: row for row in read_tsv(args.records)}
     annotations = {row["id"]: row for row in read_tsv(args.annotations)}
@@ -273,7 +275,8 @@ def main() -> None:
     split_groups("sequence", sequence_uf, records, annotations,
                  args.output_root / "pdb_v2_sequence", args.seed, args.valid_groups, args.test_groups)
     split_groups("structure", structure_uf, records, annotations,
-                 args.output_root / "pdb_v2_structure", args.seed, args.valid_groups, args.test_groups)
+                 args.output_root / "pdb_v2_structure", args.seed,
+                 args.structure_valid_groups, args.structure_test_groups)
     chronological(records, annotations, sequence_uf, structural_uf,
                   args.output_root / "pdb_v2_time")
 

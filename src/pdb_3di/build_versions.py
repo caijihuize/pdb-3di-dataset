@@ -61,6 +61,19 @@ def union_buckets(uf: UnionFind, buckets) -> None:
                 uf.union(first, member)
 
 
+def cath_topologies(path: Path) -> dict[str, str]:
+    """Map CATH domain IDs to C.A.T topology identifiers."""
+    output = {}
+    with path.open() as handle:
+        for line in handle:
+            if not line.strip() or line.startswith("#"):
+                continue
+            columns = line.split()
+            if len(columns) >= 4:
+                output[columns[0].lower()] = ".".join(columns[1:4])
+    return output
+
+
 def groups(uf: UnionFind, ids) -> dict[str, list[str]]:
     output = defaultdict(list)
     for record_id in ids:
@@ -205,6 +218,7 @@ def main() -> None:
     parser.add_argument("--sequence-clusters", type=Path, required=True)
     parser.add_argument("--structure-clusters", type=Path, required=True)
     parser.add_argument("--structure-key-map", type=Path, required=True)
+    parser.add_argument("--cath-domain-list", type=Path, required=True)
     parser.add_argument("--v1-manifests", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=42)
@@ -229,21 +243,29 @@ def main() -> None:
     union_buckets(sequence_uf, by_pdb.values())
     union_buckets(sequence_uf, by_sequence.values())
     union_buckets(sequence_uf, by_uniprot.values())
-    foldseek_uf = UnionFind(records)
+    structural_uf = UnionFind(records)
     key_map = {}
     with args.structure_key_map.open(newline="") as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
             key_map[row["foldseek_db_key"]] = row["id"]
-    unions_from_tsv(foldseek_uf, args.structure_clusters, key_map)
+    unions_from_tsv(structural_uf, args.structure_clusters, key_map)
+    domain_to_topology = cath_topologies(args.cath_domain_list)
+    by_cath_topology = defaultdict(list)
+    for record_id in records:
+        for domain_id in annotations[record_id].get("sifts_cath_ids", "").split(";"):
+            topology = domain_to_topology.get(domain_id.lower())
+            if topology:
+                by_cath_topology[topology].append(record_id)
+    union_buckets(structural_uf, by_cath_topology.values())
     structure_uf = sequence_uf.copy()
     for record_id in records:
-        structure_uf.union(record_id, foldseek_uf.find(record_id))
+        structure_uf.union(record_id, structural_uf.find(record_id))
     v11(args.v1_manifests, args.annotations, args.output_root / "pdb_v1_1")
     split_groups("sequence", sequence_uf, records, annotations,
                  args.output_root / "pdb_v2_sequence", args.seed, args.valid_groups, args.test_groups)
     split_groups("structure", structure_uf, records, annotations,
                  args.output_root / "pdb_v2_structure", args.seed, args.valid_groups, args.test_groups)
-    chronological(records, annotations, sequence_uf, foldseek_uf,
+    chronological(records, annotations, sequence_uf, structural_uf,
                   args.output_root / "pdb_v2_time")
 
 

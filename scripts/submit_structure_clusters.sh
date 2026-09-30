@@ -27,7 +27,8 @@ rm -f "${OUT}/candidates"* "${OUT}/clusters"* "${OUT}/clusters.tsv"
 rm -rf "${OUT}/tmp"
 "${FOLDSEEK}" createsubdb "${OUT}/candidate.keys" "${FSDB}" "${OUT}/candidates"
 "${FOLDSEEK}" cluster "${OUT}/candidates" "${OUT}/clusters" "${OUT}/tmp" \
-  -e 1e-3 -c 0.80 --cov-mode 0 --alignment-type 2 --cluster-mode 0 \
+  -e 1e-3 -c 0.50 --cov-mode 0 --alignment-type 2 --tmscore-threshold 0.50 \
+  --tmscore-threshold-mode 0 --sort-by-structure-bits 1 --cluster-mode 0 \
   --threads "${SLURM_CPUS_PER_TASK}"
 "${FOLDSEEK}" createtsv "${OUT}/candidates" "${OUT}/candidates" \
   "${OUT}/clusters" "${OUT}/clusters.tsv"

@@ -20,5 +20,6 @@ export PYTHONPATH="${ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}"
   --sequence-clusters data/interim/mmseqs/clusters.tsv \
   --structure-clusters data/interim/structure_clusters/clusters.tsv \
   --structure-key-map data/interim/structure_clusters/candidate_structure_ids.tsv \
+  --cath-domain-list data/raw/mappings/cath-domain-list.txt \
   --v1-manifests manifests/pdb_v1 --output-root manifests \
   --seed 42 --valid-groups 1000 --test-groups 1000

@@ -25,12 +25,13 @@ split_common:
 pdb_v2_sequence:
   group_edges: [mmseqs_sequence, same_pdb, exact_aa, same_uniprot]
 pdb_v2_structure:
-  group_edges: [mmseqs_sequence, same_pdb, exact_aa, same_uniprot, foldseek_structure]
+  group_edges: [mmseqs_sequence, same_pdb, exact_aa, same_uniprot, foldseek_structure, cath_topology]
   foldseek:
     evalue: 1.0e-3
-    coverage: 0.80
+    coverage: 0.50
     coverage_mode: 0
     alignment_type: 2
+    tm_score: 0.50
 pdb_v2_time:
   train_release_through: 2024-12-31
   validation_release_range: [2025-01-01, 2025-12-31]

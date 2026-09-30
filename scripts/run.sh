@@ -55,6 +55,8 @@ case "${STAGE}" in
     ;;
   cluster)
     mkdir -p "${INTERIM}/mmseqs"
+    rm -f "${INTERIM}/mmseqs/clusterdb"* "${INTERIM}/mmseqs/clusters.tsv"
+    rm -rf "${INTERIM}/mmseqs/tmp"
     "${MMSEQS}" createdb "${CANDIDATES}/aa.filtered.fasta" "${INTERIM}/mmseqs/seqdb"
     "${MMSEQS}" cluster "${INTERIM}/mmseqs/seqdb" "${INTERIM}/mmseqs/clusterdb" \
       "${INTERIM}/mmseqs/tmp" --min-seq-id 0.30 -c 0.80 --cov-mode 0 \
